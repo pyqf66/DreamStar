@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>jQuery EasyUI</title>
+<link rel="stylesheet" type="text/css"
+	href="/statics/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="/statics/themes/icon.css">
+<script type="text/javascript" src="/statics/js/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/statics/js/jquery.easyui.min.js"></script>
+<script src="/statics/locale/easyui-lang-zh_CN.js"></script>
+</head>
+<body>
+	<div>
+		<div class="provinceName">
+			<label for="name">provinceName:</label> <input id="provinceName"
+				style="width: 170px;" class="easyui-combobox">
+		</div>
+		<div class="cityName">
+			<label for="name">cityName:</label> <input id="cityName"
+				style="width: 170px;" class="easyui-combobox">
+		</div>
+		<div class="townName">
+			<label for="name">townName:</label> <input id="townName"
+				style="width: 170px;" class="easyui-combobox">
+		</div>
+		<div class="birthdayDate">
+			<label for="name">birthday:</label> <input id="birthdayDate"
+				type="text" class="easyui-datebox">
+		</div>
+		<div class="idCardData">
+			<label for="name"> ID card:</label> <input id="idCardData"
+				name="idCardData" style="width: 170px;">
+		</div>
+		<div style="margin-left: 185px;">
+			<!-- 添加按钮 -->
+			<a href="#" class="easyui-linkbutton" onclick="RandomCreate()">randomCreate</a>
+			<!-- 添加按钮 -->
+			<a href="#" class="easyui-linkbutton" onclick="Submit()">submit</a>
+		</div>
+	</div>
+	<script type="text/javascript">
+		//csrf认证生明处理
+		$.ajaxSetup({
+			data : {
+				csrfmiddlewaretoken : '{{ csrf_token }}',
+			}
+
+		});
+
+		//调试程序
+		//debugger;
+		//easyui联动生成省市区
+		$('#provinceName')
+				.combobox(
+						{
+							url : '/testTool/generation/getProvince',
+							valueField : 'id',
+							textField : 'text',
+							//不可编辑状态
+							editable : false,
+							//自动高度适合
+							panelHeight : 'auto',
+							onSelect : function(record) {
+								$('#cityName')
+										.combobox(
+												{
+													url : '/testTool/generation/getCity?provinceName='
+															+ $('#provinceName')
+																	.combobox(
+																			"getText"),
+													valueField : 'id',
+													textField : 'text',
+													//不可编辑状态
+													editable : false,
+													//自动高度适合
+													panelHeight : 'auto',
+													onSelect : function(record) {
+														$('#townName')
+																.combobox(
+																		{
+																			url : '/testTool/generation/getTown?cityName='
+																					+ $(
+																							'#cityName')
+																							.combobox(
+																									"getText"),
+																			valueField : 'id',
+																			textField : 'text',
+																			//不可编辑状态
+																			editable : false,
+																			//自动高度适合
+																			panelHeight : 'auto'
+																		})
+													}
+												})
+								$('#townName').combobox('loadData', [ {
+									panelHeight : 'auto'
+								} ]);
+								$('#townName').combobox('clear');
+
+							}
+						});
+
+		//随机生成身份证
+		function RandomCreate() {
+			$.ajax({
+				type : "POST",
+				url : '/testTool/generation/identityGenneratorRandom',
+				data : {},
+				success : function(data) {
+					//alert("发送成功！");
+					document.getElementById("idCardData").value = "";
+					document.getElementById("idCardData").value = data;
+				},
+				error : function() {
+					alert("发送失败！")
+				}
+			})
+		};
+
+		//提交资料生成身份证
+		function Submit() {
+			var provinceCodeData = $('#provinceName').combobox("getValue")
+			var cityCodeData = $('#cityName').combobox("getValue")
+			var townCodeData = $('#townName').combobox("getValue")
+			var birthdayDateData = $('#birthdayDate').datebox("getValue")
+			if (provinceCodeData == '' || cityCodeData == ''
+					|| townCodeData == '' || birthdayDateData == '') {
+				alert("provinceCodeData，cityCodeData，townCodeData，birthdayDateData都得输入！")
+			} else {
+				$.ajax({
+					type : "POST",
+					url : '/testTool/generation/identityGennerator',
+					data : {
+						'townCodeData' : townCodeData,
+						'birthdayDateData' : birthdayDateData
+					},
+					success : function(data) {
+						//alert("发送成功！");
+						document.getElementById("idCardData").value = "";
+						document.getElementById("idCardData").value = data;
+					},
+					error : function() {
+						alert("发送失败！")
+					}
+				});
+			}
+
+		};
+	</script>
+</body>
+</html>

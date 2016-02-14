@@ -1,0 +1,86 @@
+@CHARSET "UTF-8";
+
+.interface {
+	margin-top: 10px;
+	margin-left: 80px;
+	margin-bottom: 10px;
+}
+
+.interfaceCode {
+	margin-left: 55px;
+	margin-bottom: 10px;
+}
+
+.method {
+	margin-left: 97px;
+	margin-bottom: 10px;
+}
+
+.params {
+	margin-left: 97px;
+	margin-bottom: 10px;
+}
+
+.result {
+	margin-left: 97px;
+	margin-bottom: 10px;
+}
+
+.mobilePhone {
+	margin-top: 10px;
+	margin-left: 80px;
+	margin-bottom: 10px;
+}
+
+.provinceName{
+	margin-top: 10px;
+	margin-left: 80px;
+	margin-bottom: 10px;
+}
+
+.cityName{
+	margin-left: 104px;
+	margin-bottom: 10px;
+}
+
+.townName{
+	margin-left: 104px;
+	margin-bottom: 10px;
+}
+
+.birthdayDate{
+	margin-left: 104px;
+	margin-bottom: 10px;
+}
+
+.idCardData{
+	margin-left: 110px;
+	margin-bottom: 10px;
+}
+
+.aLongitude{
+	margin-top: 10px;
+	margin-left: 80px;
+	margin-bottom: 10px;
+}
+
+.aLatitude{
+	margin-left: 80px;
+	margin-bottom: 10px;
+}
+
+.bLongitude{
+	margin-left: 80px;
+	margin-bottom: 10px;
+}
+
+.bLatitude{
+	margin-left: 80px;
+	margin-bottom: 10px;
+}
+
+.abDistance{
+	margin-left: 62px;
+	margin-bottom: 10px;
+}
+

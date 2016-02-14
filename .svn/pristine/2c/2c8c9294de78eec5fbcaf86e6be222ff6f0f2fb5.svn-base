@@ -1,0 +1,11 @@
+[ipAddress]
+IP=192.168.1.6
+
+[ipPort]
+PORT=22
+
+[userName]
+user=root
+
+[password]
+pwd=123456

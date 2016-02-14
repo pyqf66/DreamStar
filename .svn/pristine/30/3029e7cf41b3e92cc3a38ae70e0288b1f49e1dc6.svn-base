@@ -1,0 +1,6 @@
+﻿用户名,密码,测试点
+saohuobang@hfbh,123456,用户名匹配可登录成功
+saohuobang@hfbh,654321,密码错误不可登陆成功
+fail@hfbh,123456,用户名错误不可登录成功
+saohuobang@hfbh*,123456,带通配符用户名不可登录成功
+test,test,test
