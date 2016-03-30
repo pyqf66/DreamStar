@@ -52,3 +52,5 @@ class CrmmockPaydata(models.Model):
     card_no = models.CharField(max_length=255)
     paylog = models.CharField(max_length=2048)
     crmcode = models.CharField(max_length=32)
+    growthlevel = models.CharField(max_length=32)
+    growthvalue = models.CharField(max_length=32)

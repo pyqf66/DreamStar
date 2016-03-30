@@ -14,6 +14,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.paginator import Paginator
 import simplejson
+import json
 import datetime
 from totest.models import CrmmockInfo
 from totest.models import CrmmockPaydata
@@ -52,6 +53,8 @@ def crmmock_paydata_json_response(request):
             crmmock_paydata_json_list[index_num]["card_no"] = i.card_no
             crmmock_paydata_json_list[index_num]["paylog"] = i.paylog
             crmmock_paydata_json_list[index_num]["crmcode"] = i.crmcode
+            crmmock_paydata_json_list[index_num]["growthlevel"] = i.growthlevel
+            crmmock_paydata_json_list[index_num]["growthvalue"] = i.growthvalue
             index_num = index_num + 1
         paging_object = Paginator(crmmock_paydata_json_list, rows)
         results = paging_object.page(page).object_list
@@ -78,7 +81,7 @@ def crmdata_setting(request):
             if "inserted" in data_list:
                 for i in list(simplejson.loads(data_list["inserted"])):
                     # 增加数据
-                    crmmock_paydata_db = CrmmockPaydata(card_no=i["card_no"], paylog=i["paylog"], crmcode=i["crmcode"])
+                    crmmock_paydata_db = CrmmockPaydata(card_no=i["card_no"], paylog=i["paylog"], crmcode=i["crmcode"], growthlevel=i["growthlevel"], growthvalue=i["growthvalue"])
                     crmmock_paydata_db.save()
             if "deleted" in data_list:
                 for i in list(simplejson.loads(data_list["deleted"])):
@@ -88,7 +91,7 @@ def crmdata_setting(request):
                 for i in list(simplejson.loads(data_list["updated"])):
                     # 更新数据
                     CrmmockPaydata.objects.filter(id=i["id"]).update(id=i["id"], card_no=i["card_no"],
-                                                                     paylog=i["paylog"], crmcode=i["crmcode"])
+                                                                     paylog=i["paylog"], crmcode=i["crmcode"], growthlevel=i["growthlevel"], growthvalue=i["growthvalue"])
             result = simplejson.dumps(result)
             return HttpResponse(result)
         else:
@@ -121,6 +124,7 @@ def ytdyc_crm(request):
                 logger.info(crmcard_list)
             logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crmUri=" + crmurl)
             crmdata = simplejson.loads(request.body.decode("utf-8"))
+            logger.info(type(crmdata))
             logger.info(
                 ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crmdata=" + request.body.decode("utf-8"))
             logger.info(crmdata["method"])
@@ -178,6 +182,16 @@ def ytdyc_crm(request):
             logger.info(crmdata)
             httpObject = HttpUrlConnection(crmurl, method="POST", parameters=crmdata, headers=headers_dict)
             result = httpObject.request()
+            if crmdata["method"] == "GetVipCard" and (crmdata["args"]["card_no"] in crmcard_list):
+                # 数据库读取设置好的支付记录
+                for j in list(crmdata_object.filter(card_no=crmdata["args"]["card_no"])):
+                    growthlevel = j.growthlevel
+                    growthvalue= j.growthvalue
+                    logger.info(growthlevel)
+                result_dict = simplejson.loads(result.text)
+                result_dict["args"]["growthlevel"] = growthlevel
+                result_dict["args"]["growthvalue"] = growthvalue
+                result = simplejson.dumps(result_dict)
         # 非POST请求返回
         else:
             resultDict = {"error": "1", "msg": "不提供POST以外的请求数据"}
