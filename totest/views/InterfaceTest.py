@@ -57,16 +57,16 @@ def interface_test_form(request):
     try:
         global received_json_interface_code
         if request.method == 'POST':
-            received_json_url = request.POST.get("testUrl").encode("utf-8")
-            received_json_interface_code = request.POST.get("interfaceCodeValue").encode("utf-8")
-            received_json_data = request.POST.get("effectRow").encode("utf-8")
+            received_json_url = request.POST.get("testUrl")
+            received_json_interface_code = request.POST.get("interfaceCodeValue")
+            received_json_data = request.POST.get("effectRow")
             received_json_dict = simplejson.loads(received_json_data)
             headers_dict = {"Content-type": "application/json"}
 
         elif request.method == 'GET':
-            received_json_url = request.GET.get("testUrl").encode("utf-8")
-            received_json_interface_code = request.GET.get("interfaceCodeValue").encode("utf-8")
-            received_json_data = request.GET.get("effectRow").encode("utf-8")
+            received_json_url = request.GET.get("testUrl")
+            received_json_interface_code = request.GET.get("interfaceCodeValue")
+            received_json_data = request.GET.get("effectRow")
             logger.debug(received_json_data)
             received_json_dict = simplejson.loads(received_json_data)
             headers_dict = {}
