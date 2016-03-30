@@ -191,7 +191,7 @@ def ytdyc_crm(request):
                 result_dict = simplejson.loads(result.text)
                 result_dict["args"]["growthlevel"] = growthlevel
                 result_dict["args"]["growthvalue"] = growthvalue
-                result = simplejson.dumps(result_dict)
+                result = simplejson.dumps(result_dict, ensure_ascii=False)
         # 非POST请求返回
         else:
             resultDict = {"error": "1", "msg": "不提供POST以外的请求数据"}
