@@ -1,33 +1,33 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>jQuery EasyUI</title>
-    <link rel="stylesheet" type="text/css"
-          href="/statics/themes/default/easyui.css">
-    <link rel="stylesheet" type="text/css" href="/statics/themes/icon.css">
-    <script type="text/javascript" src="/statics/js/jquery-1.11.3.min.js"></script>
-    <script type="text/javascript" src="/statics/js/jquery.easyui.min.js"></script>
-    <script src="/statics/locale/easyui-lang-zh_CN.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>jQuery EasyUI</title>
+<link rel="stylesheet" type="text/css"
+	href="/statics/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="/statics/themes/icon.css">
+<script type="text/javascript" src="/statics/js/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/statics/js/jquery.easyui.min.js"></script>
+<script src="/statics/locale/easyui-lang-zh_CN.js"></script>
 </head>
 <body>
-<!-- 添加功能按钮 -->
-<div id="crmtb" style="height: auto">
-    <a id="crmmockAppendlink" href="javascript:void(0)"
-       class="easyui-linkbutton"
-       data-options="iconCls:'icon-add',plain:true" onclick="append()">Append</a>
-    <a id="crmmockRemovelink" href="javascript:void(0)"
-       class="easyui-linkbutton"
-       data-options="iconCls:'icon-remove',plain:true" onclick="removeit()">Remove</a>
-    <a id="crmmockAcceptlink" href="javascript:void(0)"
-       class="easyui-linkbutton"
-       data-options="iconCls:'icon-save',plain:true" onclick="accept()">Accept</a>
-</div>
-<div>
-    <!-- 添加数据列表并设置为可编辑 -->
-    <table id="crmdg" class="easyui-datagrid" title="请严格按照规范进行测试接口的配置"
-           style="width: auto; height: auto"
-           data-options="
+	<!-- 添加功能按钮 -->
+	<div id="crmtb" style="height: auto">
+		<a id="crmmockAppendlink" href="javascript:void(0)"
+			class="easyui-linkbutton"
+			data-options="iconCls:'icon-add',plain:true" onclick="append()">Append</a>
+		<a id="crmmockRemovelink" href="javascript:void(0)"
+			class="easyui-linkbutton"
+			data-options="iconCls:'icon-remove',plain:true" onclick="removeit()">Remove</a>
+		<a id="crmmockAcceptlink" href="javascript:void(0)"
+			class="easyui-linkbutton"
+			data-options="iconCls:'icon-save',plain:true" onclick="accept()">Accept</a>
+	</div>
+	<div>
+		<!-- 添加数据列表并设置为可编辑 -->
+		<table id="crmdg" class="easyui-datagrid" title="请严格按照规范进行测试接口的配置"
+			style="width: auto; height: auto"
+			data-options="
 				iconCls: 'icon-edit',
 				fitColumns: true,
 				singleSelect: true,
@@ -36,15 +36,14 @@
 				method: 'get',
 				onClickCell: onClickCell
 			"
-           pagination="true" rownumbers="true" fix="true" collapsible="false">
-        <div id="searchtool" style="padding: 5px">
-            <span>card_no:</span><input type="text" id="crmNoCondition" value=""
-                                        size=10/> <a href="javascript:FindData()"
-                                                     class="easyui-linkbutton"
-                                                     data-options="iconCls:'icon-search'">查询</a>
-            <div>
-    </table>
-    <script type="text/javascript">
+			pagination="true" rownumbers="true" fix="true" collapsible="false">
+			<div id="searchtool" style="padding: 5px">
+				<span>card_no:</span><input type="text" id="crmNoCondition" value=""
+					size=10 /> <a href="javascript:FindData()"
+					class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+				<div>
+		</table>
+		<script type="text/javascript">
         //csrf认证生明处理
         $.ajaxSetup({
             data: {
@@ -171,6 +170,7 @@
 
         //提交数据
         function accept() {
+        	//debugger;
             if (endEditing()) {
                 //禁用保存按钮，防止重复提交
                 $('#crmmockAcceptlink').removeAttr("onclick");
@@ -179,17 +179,35 @@
                 var deleted = $("#crmdg").datagrid('getChanges', 'deleted');
                 var updated = $("#crmdg").datagrid('getChanges', 'updated');
                 var effectRow = new Object();
+                var isFloat=0;
                 if (inserted.length) {
                     effectRow["inserted"] = JSON.stringify(inserted);
+	                for(var i in inserted){
+	                	if (inserted[i]["growthvalue"].indexOf("\.")>=0){
+	                		isFloat=1	
+	                	}      
+	                }
                 }
                 if (deleted.length) {
                     effectRow["deleted"] = JSON.stringify(deleted);
+	                for(var i in deleted){
+	                	if (deleted[i]["growthvalue"].indexOf("\.")>=0){
+		                	isFloat=1	
+		                }  
+	                }
                 }
                 if (updated.length) {
+                	//debugger;
                     effectRow["updated"] = JSON.stringify(updated);
+                    for(var i in updated){
+                    	if(updated[i]["growthvalue"].indexOf("\.")>=0){
+                    		isFloat=1
+                    	}
+                    }
                 }
                 var count = getJsonLength(effectRow)
-                if (count != 0) {
+                
+                if (count != 0&&isFloat==0) {
                     //和后台交互进行数据提交
                     $.ajax({
                         type: 'POST',
@@ -207,7 +225,14 @@
                     });
                 }
                 else {
-                    alert("数据无变更");
+                	if (count==0){
+                		alert("数据无变更！");
+                	}
+                	if (isFloat==1){
+                		alert("成长值不能是小数！");
+                	}
+                	
+                    
                     //提交成功并重新释放提交按钮
                     $('#crmmockAcceptlink').attr("onclick", "accept();");
                     $('#crmdg').datagrid("reload");
@@ -317,6 +342,6 @@
             }
         }
     </script>
-</div>
+	</div>
 </body>
 </html>
