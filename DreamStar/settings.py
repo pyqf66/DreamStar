@@ -20,7 +20,6 @@ import logging.handlers
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
@@ -78,7 +77,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'DreamStar.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
@@ -88,7 +86,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -103,21 +100,24 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
 if platform.system() == "Linux":
     STATICFILES_DIRS = (
-    "%s/%s" % (BASE_DIR, "statics")
-)
+        "%s/%s" % (BASE_DIR, "statics")
+    )
+elif platform.system() == "Darwin":
+    STATICFILES_DIRS = (
+        "%s/%s" % (BASE_DIR, "statics")
+    )
+
 elif platform.system() == "Windows":
     # BASE_Windows_DIR=BASE_DIR.re
     BASE_WINDOWS_DIR = BASE_DIR.replace("\\", "/")
     STATICFILES_DIRS = ("%s/%s" % (BASE_WINDOWS_DIR, "statics"))
-    
-    
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -135,33 +135,35 @@ LOGGING = {
             'include_html': True,
         },
         'default': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(STATICFILES_DIRS + '/logs/', 'all.log'),  # 或者直接写路径：'c:\logs\all.log',
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
-            'formatter':'standard',
+            'formatter': 'standard',
         },
-        'console':{
+        'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard'
         },
         'request_handler': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(STATICFILES_DIRS + '/logs/', 'script.log'),  # 或者直接写路径：'filename':'c:\logs\request.log''  
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(STATICFILES_DIRS + '/logs/', 'script.log'),
+            # 或者直接写路径：'filename':'c:\logs\request.log''
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
-            'formatter':'standard',
+            'formatter': 'standard',
         },
         'scprits_handler': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(STATICFILES_DIRS + '/logs/', 'script.log'),  # 或者直接写路径：'filename':'c:\logs\script.log'
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(STATICFILES_DIRS + '/logs/', 'script.log'),
+            # 或者直接写路径：'filename':'c:\logs\script.log'
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
-            'formatter':'standard',
+            'formatter': 'standard',
         },
     },
     'loggers': {
@@ -170,10 +172,10 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False
         },
-        'DreamStar.app':{
+        'DreamStar.app': {
             'handlers': ['default', 'console'],
             'level': 'DEBUG',
-            'propagate': True        
+            'propagate': True
         },
         'django.request': {
             'handlers': ['request_handler'],
@@ -186,4 +188,4 @@ LOGGING = {
             'propagate': False
         },
     }
-}         
+}

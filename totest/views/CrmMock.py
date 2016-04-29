@@ -229,17 +229,21 @@ def oyjt_crm(request, rest_api):
         crmmember_ID_dict = dict()
         logger.info(request.method)
         # 将所有从数据库中获取的卡号传入crmcard_list，查询欧亚接口把CrmMemberID插入crmmember_ID_dict
-        for i in list(crmdata_object):
-            tmp_card = i.card_no
-            crmmember_ID_url = "http://wap.oysd.cn/Info/WeChatCustomerInfo/" + tmp_card
-            logger.info(crmmember_ID_url)
-            httpObject = HttpUrlConnection(crmmember_ID_url)
-            crmmember_ID_result = httpObject.request().decode("utf-8")
-            logger.info(crmmember_ID_result)
-            crmcard_list.append(tmp_card)
-            crmmember_ID_dict[simplejson.loads(crmmember_ID_result)["WCC"]["CrmMemberID"]] = str(tmp_card)
-            logger.info(crmcard_list)
-            logger.info(crmmember_ID_dict)
+        try:
+            for i in list(crmdata_object):
+                tmp_card = i.card_no
+                crmmember_ID_url = "http://wap.oysd.cn/Info/WeChatCustomerInfo/" + tmp_card
+                logger.info(crmmember_ID_url)
+                httpObject = HttpUrlConnection(crmmember_ID_url)
+                crmmember_ID_result = httpObject.request().json()
+                logger.info(crmmember_ID_result)
+                logger.info(type(crmmember_ID_result))
+                crmcard_list.append(tmp_card)
+                crmmember_ID_dict[crmmember_ID_result["WCC"]["CrmMemberID"]] = str(tmp_card)
+                logger.info(crmcard_list)
+                logger.info(crmmember_ID_dict)
+        except:
+            logger.exception("error:")
         # 获取rest链接参数
         crmapi = rest_api
         # 拼接真正请求的url
@@ -338,10 +342,10 @@ def oyjt_crm(request, rest_api):
         if request.method == "GET":
             httpObject = HttpUrlConnection(crm_rest_absapi, method="GET")
             logger.info("+++++++++++++++++++++++++++++++++++++")
-            result = httpObject.request().decode("utf-8")
+            result = httpObject.request().json()
             logger.debug(type(result))
             logger.debug(result)
-            resultDict = simplejson.loads(result)
+            resultDict = result
             # 获取会员卡信息，其他接口数据直接返回result
             if "Info/MembershipCardBasicInfo" in crmapi and resultDict["Mcb"] != None:
                 if resultDict["Mcb"]["CardID"] in crmcard_list:
