@@ -5,8 +5,8 @@
 # Author: 张羽锋
 # History: 2015/11/02 张羽锋 新建
 ###########################################
-from totest import parameters_config_urls, interface_test_urls,\
-    data_generation_urls
+from totest.urls import parameters_config_urls, data_generation_urls, interface_test_urls
+
 """DreamStar URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
