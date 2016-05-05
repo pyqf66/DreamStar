@@ -228,7 +228,7 @@ def ytdyc_crm(request):
 @csrf_exempt
 def oyjt_crm(request, rest_api):
     try:
-        crmdata=dict()
+        crmdata = dict()
         logger.debug(request.body.decode("utf-8"))
         # 判断是json数据还是application/x-www-form-urlencoded请求数据
         if request.body.decode("utf-8") != "":
@@ -279,7 +279,6 @@ def oyjt_crm(request, rest_api):
                         paylog_dict = dict()
                         logger.debug(paylog_dict)
                         for j in list(crmdata_object):
-                            # logger.info(key)
                             logger.info("++++++++++++++++++++++++++++++++++++")
                             logger.info(j.paylog)
                             paylog_dict = simplejson.loads(j.paylog.encode("utf-8"))
@@ -360,7 +359,7 @@ def oyjt_crm(request, rest_api):
                     logger.debug(list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])))
                     if list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
                         # 数据库读取设置好的支付记录
-                        paylog_dict=dict()
+                        paylog_dict = dict()
                         for j in list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
                             logger.info(j.paylog)
                             paylog_dict = simplejson.loads(j.paylog.encode("utf-8"))
