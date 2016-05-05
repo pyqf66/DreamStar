@@ -118,6 +118,11 @@ def crmdata_setting(request):
                                                                      growthlevel=i["growthlevel"],
                                                                      growthvalue=i["growthvalue"], crmmemberid=
                                                                      crmmember_ID_result["WCC"]["CrmMemberID"])
+                    else:
+                        CrmmockPaydata.objects.filter(id=i["id"]).update(id=i["id"], card_no=i["card_no"],
+                                                                     paylog=i["paylog"], crmcode=i["crmcode"],
+                                                                     growthlevel=i["growthlevel"],
+                                                                     growthvalue=i["growthvalue"])
                     result = simplejson.dumps(result, ensure_ascii=False)
                     return HttpResponse(result)
                 else:
@@ -132,6 +137,7 @@ def crmdata_setting(request):
 @csrf_exempt
 def ytdyc_crm(request):
     try:
+        crmurl=str()
         if request.method == "POST":
             try:
                 crmdata = simplejson.loads(request.body.decode("utf-8"))
@@ -144,7 +150,10 @@ def ytdyc_crm(request):
                     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>requestMethod=" + request.method)
                 # 数据库中获取配置
                 crmurl_object = CrmmockInfo.objects.filter(crmcode="ytdyc")
-                crmdata_object = CrmmockPaydata.objects.filter(crmcode="ytdyc", card_no=crmdata["args"]["card_no"])
+                try:
+                    crmdata_object = CrmmockPaydata.objects.filter(crmcode="ytdyc", card_no=crmdata["args"]["card_no"])
+                except:
+                    crmdata_object = CrmmockPaydata.objects.filter(crmcode="ytdyc")
                 crmurl = list(crmurl_object)[0].crmuri
                 logger.debug(crmurl)
             except:
@@ -264,7 +273,10 @@ def oyjt_crm(request, rest_api):
             ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crm_rest_absapi=" + crm_rest_absapi)
         logger.info(request.method)
         if request.method == "POST":
-            crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt", crmmemberid=crmdata["CrmMemberID"])
+            try:
+                crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt", crmmemberid=crmdata["CrmMemberID"])
+            except:
+                crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt")
             # 获取消费记录
             if crmapi == "Info/GetCrmHyxfjl":
                 paydata_detail = dict()
@@ -281,6 +293,7 @@ def oyjt_crm(request, rest_api):
                 paydata["0"] = paydata_detail
                 logger.info(crmdata["CrmMemberID"])
                 if list(crmdata_object):
+                    paylog_data_list=list()
                     try:
                         # 数据库读取设置好的支付记录
                         paylog_dict = dict()
@@ -288,7 +301,7 @@ def oyjt_crm(request, rest_api):
                         for j in list(crmdata_object):
                             logger.info("++++++++++++++++++++++++++++++++++++")
                             logger.info(j.paylog)
-                            paylog_dict = simplejson.loads(j.paylog.encode("utf-8"))
+                            paylog_dict = simplejson.loads(j.paylog)
                             logger.info(paylog_dict)
                         paylog_data_list = paylog_dict["data"]
                         logger.info(paylog_data_list)
@@ -352,6 +365,7 @@ def oyjt_crm(request, rest_api):
             result = httpObject.request()
 
         if request.method == "GET":
+            resultDict=dict()
             try:
                 crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt")
                 httpObject = HttpUrlConnection(crm_rest_absapi, method="GET")
@@ -369,7 +383,7 @@ def oyjt_crm(request, rest_api):
                         paylog_dict = dict()
                         for j in list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
                             logger.info(j.paylog)
-                            paylog_dict = simplejson.loads(j.paylog.encode("utf-8"))
+                            paylog_dict = simplejson.loads(j.paylog)
                             logger.info(paylog_dict)
                         # 获取数据库中配置的建卡时间
                         createDate = paylog_dict["data"][0]
