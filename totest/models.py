@@ -54,3 +54,4 @@ class CrmmockPaydata(models.Model):
     crmcode = models.CharField(max_length=32)
     growthlevel = models.CharField(max_length=32)
     growthvalue = models.CharField(max_length=32)
+    crmmemberid = models.CharField(max_length=32,null=True)

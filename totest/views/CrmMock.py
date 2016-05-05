@@ -80,8 +80,23 @@ def crmdata_setting(request):
             data_list = simplejson.loads(received_json_data.encode("utf-8"))
             if "inserted" in data_list:
                 for i in list(simplejson.loads(data_list["inserted"])):
-                    # 增加数据
-                    crmmock_paydata_db = CrmmockPaydata(card_no=i["card_no"], paylog=i["paylog"], crmcode=i["crmcode"], growthlevel=i["growthlevel"], growthvalue=i["growthvalue"])
+                    # 增加数据，如果是欧亚会员卡则请求crm并把CrmMemberId插入库
+                    if i["crmcode"] == "oyjt":
+                        des_card = i["card_no"]
+                        crmmember_ID_url = "http://wap.oysd.cn/Info/WeChatCustomerInfo/" + des_card
+                        logger.info(crmmember_ID_url)
+                        httpObject = HttpUrlConnection(crmmember_ID_url)
+                        crmmember_ID_result = httpObject.request().json()
+                        logger.info(crmmember_ID_result)
+                        logger.info(type(crmmember_ID_result))
+                        crmmock_paydata_db = CrmmockPaydata(card_no=i["card_no"], paylog=i["paylog"],
+                                                            crmcode=i["crmcode"], growthlevel=i["growthlevel"],
+                                                            growthvalue=i["growthvalue"],
+                                                            crmmemberid=crmmember_ID_result["WCC"]["CrmMemberID"])
+                    else:
+                        crmmock_paydata_db = CrmmockPaydata(card_no=i["card_no"], paylog=i["paylog"],
+                                                            crmcode=i["crmcode"], growthlevel=i["growthlevel"],
+                                                            growthvalue=i["growthvalue"])
                     crmmock_paydata_db.save()
             if "deleted" in data_list:
                 for i in list(simplejson.loads(data_list["deleted"])):
@@ -91,7 +106,9 @@ def crmdata_setting(request):
                 for i in list(simplejson.loads(data_list["updated"])):
                     # 更新数据
                     CrmmockPaydata.objects.filter(id=i["id"]).update(id=i["id"], card_no=i["card_no"],
-                                                                     paylog=i["paylog"], crmcode=i["crmcode"], growthlevel=i["growthlevel"], growthvalue=i["growthvalue"])
+                                                                     paylog=i["paylog"], crmcode=i["crmcode"],
+                                                                     growthlevel=i["growthlevel"],
+                                                                     growthvalue=i["growthvalue"])
             result = simplejson.dumps(result)
             return HttpResponse(result)
         else:
@@ -108,26 +125,23 @@ def crmdata_setting(request):
 def ytdyc_crm(request):
     try:
         if request.method == "POST":
-            logger.info(
-                ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>requestMethod=" + request.method)
-            # 数据库中获取配置
-            crmurl_object = CrmmockInfo.objects.filter(crmcode="ytdyc")
-            crmdata_object = CrmmockPaydata.objects.filter(crmcode="ytdyc")
-            crmurl = list(crmurl_object)[0].crmuri
-            logger.debug(crmurl)
-            crmcard_list = list()
-            # 将所有从数据库中获取的卡号传入crmcard_list
-            for i in list(crmdata_object):
-                tmp_card = i.card_no
-                #                 tmp_card = i.card_no.encode("utf-8")
-                crmcard_list.append(tmp_card)
-                logger.info(crmcard_list)
+            try:
+                crmdata = simplejson.loads(request.body.decode("utf-8"))
+                logger.info(type(crmdata))
+                logger.info(
+                    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crmdata=" + request.body.decode(
+                        "utf-8"))
+                logger.info(crmdata["method"])
+                logger.info(
+                    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>requestMethod=" + request.method)
+                # 数据库中获取配置
+                crmurl_object = CrmmockInfo.objects.filter(crmcode="ytdyc")
+                crmdata_object = CrmmockPaydata.objects.filter(crmcode="ytdyc", card_no=crmdata["args"]["card_no"])
+                crmurl = list(crmurl_object)[0].crmuri
+                logger.debug(crmurl)
+            except:
+                logger.exception("基础数据错误：")
             logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crmUri=" + crmurl)
-            crmdata = simplejson.loads(request.body.decode("utf-8"))
-            logger.info(type(crmdata))
-            logger.info(
-                ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crmdata=" + request.body.decode("utf-8"))
-            logger.info(crmdata["method"])
             # 满足条件则生成mock数据
             if crmdata["method"] == "GetVipPayLog":
                 logger.info(crmdata["method"])
@@ -142,56 +156,64 @@ def ytdyc_crm(request):
                 paydata["sign"] = sign
                 paydata["args"] = list()
                 # 判断获取的请求中的卡号是否存在于已配置的卡号列表
-                if crmdata["args"]["card_no"] in crmcard_list:
-                    # 数据库读取设置好的支付记录
-                    for j in list(crmdata_object.filter(card_no=crmdata["args"]["card_no"])):
-                        logger.info(j.paylog)
-                        paylog_dict = simplejson.loads(j.paylog)
-                        logger.info(paylog_dict)
-                    paylog_data_list = paylog_dict["data"]
-                    if len(paylog_data_list) == 1:
-                        # 设置了建卡时间但未设置消费记录
-                        paydata = {"errno": 0, "errmsg": "没找到相关记录，请确认", "args": None}
-                    else:
-                        # 设置了建卡时间并设置了消费记录
-                        jointdate = paylog_dict["data"][0]
-                        for k in range(len(paylog_data_list) - 1):
-                            num = k + 1
-                            salesamt = paylog_data_list[num][0]
-                            datetime_str_buy = paylog_data_list[num][1]
-                            # 调用大悦城数据Dict
-                            args_data = ytdycDict(card_no, jointdate, salesamt, datetime_str_buy)
-                            paydata["args"].append(args_data)
-                            logger.info(paydata)
-                    return HttpResponse(simplejson.dumps(paydata, ensure_ascii=False))
-
+                if list(crmdata_object):
+                    try:
+                        # 数据库读取设置好的支付记录
+                        for j in list(crmdata_object.filter(card_no=crmdata["args"]["card_no"])):
+                            logger.info(j.paylog)
+                            paylog_dict = simplejson.loads(j.paylog)
+                            logger.info(paylog_dict)
+                        paylog_data_list = paylog_dict["data"]
+                        if len(paylog_data_list) == 1:
+                            # 设置了建卡时间但未设置消费记录
+                            paydata = {"errno": 0, "errmsg": "没找到相关记录，请确认", "args": None}
+                        else:
+                            # 设置了建卡时间并设置了消费记录
+                            jointdate = paylog_dict["data"][0]
+                            for k in range(len(paylog_data_list) - 1):
+                                num = k + 1
+                                salesamt = paylog_data_list[num][0]
+                                datetime_str_buy = paylog_data_list[num][1]
+                                # 调用大悦城数据Dict
+                                args_data = ytdycDict(card_no, jointdate, salesamt, datetime_str_buy)
+                                paydata["args"].append(args_data)
+                                logger.info(paydata)
+                        return HttpResponse(simplejson.dumps(paydata, ensure_ascii=False))
+                    except:
+                        logger.exception("自设定卡号mock异常:")
                 else:
-                    # 无支付记录的给予默认值
-                    yesterday_date = str(datetime.date.today() - datetime.timedelta(days=1))
-                    TIME_STR_REGISTER = " 10:59:59"
-                    TIME_STR_BUY = " 11:59:59"
-                    datetime_str_register = yesterday_date + TIME_STR_REGISTER
-                    datetime_str_buy = yesterday_date + TIME_STR_BUY
-                    SALESAMT = "600.0000"
-                    # 调用大悦城数据Dict
-                    args_data = ytdycDict(card_no, datetime_str_register, SALESAMT, datetime_str_buy)
-                    paydata["args"].append(args_data)
+                    try:
+                        # 无支付记录的给予默认值
+                        yesterday_date = str(datetime.date.today() - datetime.timedelta(days=1))
+                        TIME_STR_REGISTER = " 10:59:59"
+                        TIME_STR_BUY = " 11:59:59"
+                        datetime_str_register = yesterday_date + TIME_STR_REGISTER
+                        datetime_str_buy = yesterday_date + TIME_STR_BUY
+                        SALESAMT = "600.0000"
+                        # 调用大悦城数据Dict
+                        args_data = ytdycDict(card_no, datetime_str_register, SALESAMT, datetime_str_buy)
+                        paydata["args"].append(args_data)
+                    except:
+                        logger.exception("非自设定卡号mock异常")
                 return HttpResponse(simplejson.dumps(paydata, ensure_ascii=False))
             # 不满足条件则直接请求真实crm接口
             headers_dict = {"Content-type": "application/json"}
             logger.info(crmdata)
             httpObject = HttpUrlConnection(crmurl, method="POST", parameters=crmdata, headers=headers_dict)
             result = httpObject.request()
-            if crmdata["method"] == "GetVipCard" and (crmdata["args"]["card_no"] in crmcard_list):
-                # 数据库读取设置好的支付记录
-                for j in list(crmdata_object.filter(card_no=crmdata["args"]["card_no"])):
-                    growthlevel = j.growthlevel
-                    growthvalue= j.growthvalue
-                    logger.info(growthlevel)
-                result_dict = simplejson.loads(result.text)
-                result_dict["args"]["growthlevel"] = growthlevel
-                result_dict["args"]["growthvalue"] = growthvalue
-                result = simplejson.dumps(result_dict, ensure_ascii=False)
+            if crmdata["method"] == "GetVipCard" and list(crmdata_object):
+                try:
+                    # 数据库读取设置好的支付记录
+                    for j in list(crmdata_object.filter(card_no=crmdata["args"]["card_no"])):
+                        growthlevel = j.growthlevel
+                        growthvalue = j.growthvalue
+                        logger.info(growthlevel)
+                    result_dict = simplejson.loads(result.text)
+                    result_dict["args"]["growthlevel"] = growthlevel
+                    result_dict["args"]["growthvalue"] = growthvalue
+                    result = simplejson.dumps(result_dict, ensure_ascii=False)
+                except:
+                    logger.exception("成长值mock错误：")
         # 非POST请求返回
         else:
             resultDict = {"error": "1", "msg": "不提供POST以外的请求数据"}
@@ -206,15 +228,6 @@ def ytdyc_crm(request):
 @csrf_exempt
 def oyjt_crm(request, rest_api):
     try:
-        # 数据库中获取配置
-        crmurl_object = CrmmockInfo.objects.filter(crmcode="oyjt")
-        crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt")
-        crmurl = list(crmurl_object)[0].crmuri
-        logger.info(crmurl)
-        logger.info(rest_api)
-        logger.info(request.body)
-        logger.info(request.body.decode("utf-8"))
-        logger.info(request.method)
         # 判断是json数据还是application/x-www-form-urlencoded请求数据
         if request.body.decode("utf-8") != "":
             if "&" in request.body.decode("utf-8"):
@@ -225,25 +238,16 @@ def oyjt_crm(request, rest_api):
                 crmdata = simplejson.loads(request.body.decode("utf-8"))
                 logger.info(crmdata)
                 logger.info(crmdata["CrmMemberID"])
-        crmcard_list = list()
-        crmmember_ID_dict = dict()
+        # 数据库中获取配置
+        crmurl_object = CrmmockInfo.objects.filter(crmcode="oyjt")
+        crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt", crmmemberid=crmdata["CrmMemberID"])
+        crmurl = list(crmurl_object)[0].crmuri
+        logger.info(crmurl)
+        logger.info(rest_api)
+        logger.info(request.body)
+        logger.info(request.body.decode("utf-8"))
         logger.info(request.method)
-        # 将所有从数据库中获取的卡号传入crmcard_list，查询欧亚接口把CrmMemberID插入crmmember_ID_dict
-        try:
-            for i in list(crmdata_object):
-                tmp_card = i.card_no
-                crmmember_ID_url = "http://wap.oysd.cn/Info/WeChatCustomerInfo/" + tmp_card
-                logger.info(crmmember_ID_url)
-                httpObject = HttpUrlConnection(crmmember_ID_url)
-                crmmember_ID_result = httpObject.request().json()
-                logger.info(crmmember_ID_result)
-                logger.info(type(crmmember_ID_result))
-                crmcard_list.append(tmp_card)
-                crmmember_ID_dict[crmmember_ID_result["WCC"]["CrmMemberID"]] = str(tmp_card)
-                logger.info(crmcard_list)
-                logger.info(crmmember_ID_dict)
-        except:
-            logger.exception("error:")
+        logger.info(request.method)
         # 获取rest链接参数
         crmapi = rest_api
         # 拼接真正请求的url
@@ -267,28 +271,28 @@ def oyjt_crm(request, rest_api):
                 paydata["1"] = paydata_total
                 paydata["0"] = paydata_detail
                 logger.info(crmdata["CrmMemberID"])
-                key_list = list()
-                # 判断获取的请求中的卡号是否存在于已配置的卡号列表
-                for key in crmmember_ID_dict:
-                    key_list.append(key)
-                logger.info("---------------------------------")
-                logger.info(key_list)
-                if crmdata["CrmMemberID"] in key_list:
-                    # 数据库读取设置好的支付记录
-                    paylog_dict = dict()
-                    for j in list(crmdata_object.filter(card_no=crmmember_ID_dict[crmdata["CrmMemberID"]])):
-                        logger.info(key)
-                        logger.info("++++++++++++++++++++++++++++++++++++")
-                        logger.info(j.paylog)
-                        paylog_dict = simplejson.loads(j.paylog.encode("utf-8"))
-                        logger.info(paylog_dict)
-                    paylog_data_list = paylog_dict["data"]
-                    logger.info(paylog_data_list)
+                if list(crmdata_object):
+                    try:
+                        # 数据库读取设置好的支付记录
+                        paylog_dict = dict()
+                        logger.debug(paylog_dict)
+                        for j in list(crmdata_object):
+                            # logger.info(key)
+                            logger.info("++++++++++++++++++++++++++++++++++++")
+                            logger.info(j.paylog)
+                            paylog_dict = simplejson.loads(j.paylog.encode("utf-8"))
+                            logger.info(paylog_dict)
+                        paylog_data_list = paylog_dict["data"]
+                        logger.info(paylog_data_list)
+                    except:
+                        logger.exception("支付记录获取错误：")
                     if len(paylog_data_list) == 1:
                         # 设置了建卡时间但未设置消费记录
                         paydata_detail = {"Infos": [], "Info": {"shopCount": "0", "shopSumMoney": None}, "Msg": "",
                                           "Bl": True}
                         paydata_total = {"Info": {"shopCount": "0", "shopSumMoney": None}, "Msg": "", "Bl": True}
+                        paydata["0"] = paydata_detail
+                        paydata["1"] = paydata_total
                     else:
                         # 设置了建卡时间并设置了消费记录
                         k = 0
@@ -332,7 +336,7 @@ def oyjt_crm(request, rest_api):
                     paydata_total["Info"]["shopCount"] = str(1)
                     paydata_total["Info"]["shopSumMoney"] = str(AMOUNT)
                     logger.info(simplejson.dumps(paydata_total))
-                return HttpResponse(simplejson.dumps(paydata[crmdata["hasOrder"]]))
+                return HttpResponse(simplejson.dumps(paydata[crmdata["hasOrder"]], ensure_ascii=False))
             # 不满足条件则直接请求真实crm接口
             headers_dict = {"Content-type": "application/x-www-form-urlencoded"}
             logger.info(crmdata)
@@ -348,7 +352,7 @@ def oyjt_crm(request, rest_api):
             resultDict = result
             # 获取会员卡信息，其他接口数据直接返回result
             if "Info/MembershipCardBasicInfo" in crmapi and resultDict["Mcb"] != None:
-                if resultDict["Mcb"]["CardID"] in crmcard_list:
+                if list(crmdata_object):
                     # 数据库读取设置好的支付记录
                     for j in list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
                         logger.info(j.paylog)
@@ -358,8 +362,8 @@ def oyjt_crm(request, rest_api):
                     createDate = paylog_dict["data"][0]
                     # 只更改正常获取crm信息中的建卡时间,欧亚没时分秒
                     resultDict["Mcb"]["CreateDate"] = createDate.split(" ")[0]
-                    return HttpResponse(simplejson.dumps(resultDict))
-            result = simplejson.dumps(resultDict)
+                    return HttpResponse(simplejson.dumps(resultDict, ensure_ascii=False))
+            result = simplejson.dumps(resultDict, ensure_ascii=False)
             logger.info(result)
         return HttpResponse(result)
     except Exception as e:
