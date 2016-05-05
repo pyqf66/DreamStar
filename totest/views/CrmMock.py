@@ -163,7 +163,7 @@ def ytdyc_crm(request):
                             args_data = ytdycDict(card_no, jointdate, salesamt, datetime_str_buy)
                             paydata["args"].append(args_data)
                             logger.info(paydata)
-                    return HttpResponse(simplejson.dumps(paydata))
+                    return HttpResponse(simplejson.dumps(paydata, ensure_ascii=False))
 
                 else:
                     # 无支付记录的给予默认值
@@ -176,7 +176,7 @@ def ytdyc_crm(request):
                     # 调用大悦城数据Dict
                     args_data = ytdycDict(card_no, datetime_str_register, SALESAMT, datetime_str_buy)
                     paydata["args"].append(args_data)
-                return HttpResponse(simplejson.dumps(paydata))
+                return HttpResponse(simplejson.dumps(paydata, ensure_ascii=False))
             # 不满足条件则直接请求真实crm接口
             headers_dict = {"Content-type": "application/json"}
             logger.info(crmdata)
