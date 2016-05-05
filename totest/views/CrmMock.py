@@ -228,6 +228,8 @@ def ytdyc_crm(request):
 @csrf_exempt
 def oyjt_crm(request, rest_api):
     try:
+        crmdata=dict()
+        logger.debug(request.body.decode("utf-8"))
         # 判断是json数据还是application/x-www-form-urlencoded请求数据
         if request.body.decode("utf-8") != "":
             if "&" in request.body.decode("utf-8"):
@@ -240,7 +242,6 @@ def oyjt_crm(request, rest_api):
                 logger.info(crmdata["CrmMemberID"])
         # 数据库中获取配置
         crmurl_object = CrmmockInfo.objects.filter(crmcode="oyjt")
-        crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt", crmmemberid=crmdata["CrmMemberID"])
         crmurl = list(crmurl_object)[0].crmuri
         logger.info(crmurl)
         logger.info(rest_api)
@@ -256,6 +257,7 @@ def oyjt_crm(request, rest_api):
             ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crm_rest_absapi=" + crm_rest_absapi)
         logger.info(request.method)
         if request.method == "POST":
+            crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt", crmmemberid=crmdata["CrmMemberID"])
             # 获取消费记录
             if crmapi == "Info/GetCrmHyxfjl":
                 paydata_detail = dict()
@@ -344,25 +346,32 @@ def oyjt_crm(request, rest_api):
             result = httpObject.request()
 
         if request.method == "GET":
-            httpObject = HttpUrlConnection(crm_rest_absapi, method="GET")
-            logger.info("+++++++++++++++++++++++++++++++++++++")
-            result = httpObject.request().json()
-            logger.debug(type(result))
-            logger.debug(result)
-            resultDict = result
-            # 获取会员卡信息，其他接口数据直接返回result
-            if "Info/MembershipCardBasicInfo" in crmapi and resultDict["Mcb"] != None:
-                if list(crmdata_object):
-                    # 数据库读取设置好的支付记录
-                    for j in list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
-                        logger.info(j.paylog)
-                        paylog_dict = simplejson.loads(j.paylog.encode("utf-8"))
-                        logger.info(paylog_dict)
-                    # 获取数据库中配置的建卡时间
-                    createDate = paylog_dict["data"][0]
-                    # 只更改正常获取crm信息中的建卡时间,欧亚没时分秒
-                    resultDict["Mcb"]["CreateDate"] = createDate.split(" ")[0]
-                    return HttpResponse(simplejson.dumps(resultDict, ensure_ascii=False))
+            try:
+                crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt")
+                httpObject = HttpUrlConnection(crm_rest_absapi, method="GET")
+                logger.info("+++++++++++++++++++++++++++++++++++++")
+                result = httpObject.request().json()
+                logger.debug(type(result))
+                logger.debug(result)
+                resultDict = result
+                # 获取会员卡信息，其他接口数据直接返回result
+                if "Info/MembershipCardBasicInfo" in crmapi and resultDict["Mcb"] != None:
+                    logger.debug(resultDict["Mcb"]["CardID"])
+                    logger.debug(list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])))
+                    if list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
+                        # 数据库读取设置好的支付记录
+                        paylog_dict=dict()
+                        for j in list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
+                            logger.info(j.paylog)
+                            paylog_dict = simplejson.loads(j.paylog.encode("utf-8"))
+                            logger.info(paylog_dict)
+                        # 获取数据库中配置的建卡时间
+                        createDate = paylog_dict["data"][0]
+                        # 只更改正常获取crm信息中的建卡时间,欧亚没时分秒
+                        resultDict["Mcb"]["CreateDate"] = createDate.split(" ")[0]
+                        return HttpResponse(simplejson.dumps(resultDict, ensure_ascii=False))
+            except:
+                logger.exception("GET方法错误：")
             result = simplejson.dumps(resultDict, ensure_ascii=False)
             logger.info(result)
         return HttpResponse(result)
