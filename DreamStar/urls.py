@@ -27,7 +27,6 @@ from django.contrib import admin
 from DreamStar import settings
 
 urlpatterns =[ 
-#     url(r'^testdata/count/', 'totest.views.index'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^tmpPage$', "totest.views.tmp_page"),
     url(r'^interfaceTest/', include(interface_test_urls)),

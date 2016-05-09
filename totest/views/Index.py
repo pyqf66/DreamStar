@@ -23,7 +23,7 @@ def index(request):
         return render_to_response("index.html", context_instance=RequestContext(request))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"主页面错误如下:")
 
 
 # 功能菜单json数据接口
@@ -95,4 +95,4 @@ def interface_test_treegrid_json_response(request):
         return HttpResponse(interface_test_treegrid_json_str, content_type="application/json")
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"功能菜单json错误如下:")

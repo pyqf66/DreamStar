@@ -24,7 +24,7 @@ class InterfaceDataProcessing(object):
             self.__interface_code = interface_code
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"数据处理初始化错误如下:")
 
     # 接口数据处理方法，key为interface_code
     def processing(self):
@@ -39,7 +39,7 @@ class InterfaceDataProcessing(object):
                 return 0
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"最终数据处理错误如下:")
 
     # 烟台大悦城会员卡解绑接口数据处理方法
     def ytdyccrm_cancel_func(self):
@@ -51,7 +51,7 @@ class InterfaceDataProcessing(object):
             return self.__data_dict
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"大悦城数据处理错误如下:")
 
     # 处理application/x-www-form-urlencoded数据（a=1&b=1）为字典
     @classmethod
@@ -67,4 +67,4 @@ class InterfaceDataProcessing(object):
             return result
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"URL格式解码错误如下:")

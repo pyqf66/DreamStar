@@ -24,4 +24,4 @@ class Md5(object):
             return sign
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"md5加密错误如下:")

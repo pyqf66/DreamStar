@@ -24,7 +24,7 @@ def cellphone_number_creater(request):
         return render_to_response("mobilePhoneCreater.html", context_instance=RequestContext(request))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"手机号生成页面错误如下:")
 
 
 # 随机手机号生成
@@ -36,4 +36,4 @@ def create_cellphone_number(request):
         return HttpResponse(simplejson.dumps(mobile_phone))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"手机号生成错误如下:")

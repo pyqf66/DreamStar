@@ -102,7 +102,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
-
 STATIC_URL = '/static/'
 if platform.system() == "Linux":
     STATICFILES_DIRS = (
@@ -118,6 +117,7 @@ elif platform.system() == "Windows":
     BASE_WINDOWS_DIR = BASE_DIR.replace("\\", "/")
     STATICFILES_DIRS = ("%s/%s" % (BASE_WINDOWS_DIR, "statics"))
 
+# Django日志配置
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,

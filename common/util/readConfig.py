@@ -25,7 +25,7 @@ class ReadConfig:
             self.__conf_config_file = current_dir + "\\config\\" + "config.conf"
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"配置文件读取初始化错误如下:")
 
     # 读取windows ini配置文件
     # 配置文件格式
@@ -38,7 +38,7 @@ class ReadConfig:
             return config.get(label, key)
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"ini配置文件解析错误如下:")
 
     # 读取linux配置文件
     # 配置文件格式
@@ -57,4 +57,4 @@ class ReadConfig:
             return result_dict[key]
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"conf配置文件解析错误如下:")

@@ -34,7 +34,7 @@ def get_district_code():
                 code_list.append({"state": state, "city": city, "district": district, "code": code})
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"地区字典读取错误如下:")
 
 
 def gennerator():
@@ -59,4 +59,4 @@ def gennerator():
             return id
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"身份证生成错误如下:")

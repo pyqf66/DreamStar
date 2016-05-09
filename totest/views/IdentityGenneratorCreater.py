@@ -29,7 +29,7 @@ def identity_gennerator_creater(request):
         return render_to_response("genneratorCreater.html", context_instance=RequestContext(request))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"身份证生成页面错误如下:")
 
 
 # 生成身份证
@@ -54,7 +54,7 @@ def identity_gennerator(request):
         return HttpResponse(simplejson.dumps(str(id)))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"指定条件身份证生成错误如下:")
 
 
 # 随机生成身份证
@@ -86,7 +86,7 @@ def identity_gennerator_random(request):
         return HttpResponse(simplejson.dumps(str(id)))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"随机身份证生成错误如下:")
 
 
 # 获得性别

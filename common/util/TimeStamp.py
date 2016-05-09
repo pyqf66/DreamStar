@@ -21,4 +21,4 @@ class TimeStamp(object):
             return time.strftime(time_format1)
         except Exception as e:
             logger.error(e)
-            logger.exception(u"捕获到错误如下:")
+            logger.exception(u"时间戳生成错误如下:")

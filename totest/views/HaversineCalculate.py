@@ -24,7 +24,7 @@ def haversine_calculate(request):
         return render_to_response("haversineCalculate.html", context_instance=RequestContext(request))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"经纬度工具页面错误如下:")
 
 
 # 计算经纬度的两点距离
@@ -37,10 +37,7 @@ def calculate_haversine(request):
         lat1 = float(request.POST.get("aLatitude"))
         lon2 = float(request.POST.get("bLongitude"))
         lat2 = float(request.POST.get("bLatitude"))
-        logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        logger.info(lat2)
-        logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        # 将十进制度数转化为弧度  
+        # 将十进制度数转化为弧度
         lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
         # haversine公式  
         dlon = lon2 - lon1
@@ -51,4 +48,4 @@ def calculate_haversine(request):
         return HttpResponse(simplejson.dumps(c * r))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"经纬度计算工具错误如下:")

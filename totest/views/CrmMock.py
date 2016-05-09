@@ -14,7 +14,6 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.paginator import Paginator
 import simplejson
-import json
 import datetime
 from totest.models import CrmmockInfo
 from totest.models import CrmmockPaydata
@@ -31,18 +30,18 @@ def crmmock_interface(request):
         return render_to_response("crmMock.html", context_instance=RequestContext(request))
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"crmMock设置页面加载错误如下:")
 
 
 # 功能菜单-crmmock接口设置数据接口
 def crmmock_paydata_json_response(request):
     try:
         paging_data = request.GET
-        logger.info(paging_data)
+        logger.info("请求的分页要求数据信息paging_data=" + str(paging_data))
         page = paging_data.get("page")
-        logger.info(page)
+        logger.info("当前页page=" + str(page))
         rows = paging_data.get("rows")
-        logger.info(rows)
+        logger.info("每页显示行数rows=" + str(rows))
         crmmock_paydata_json_data = CrmmockPaydata.objects.all()
         crmmock_paydata_json_list = []
         index_num = 0
@@ -58,16 +57,15 @@ def crmmock_paydata_json_response(request):
             index_num = index_num + 1
         paging_object = Paginator(crmmock_paydata_json_list, rows)
         results = paging_object.page(page).object_list
-        logger.info("===========================================================")
-        logger.info(type(results))
-        logger.info(results)
+        logger.info("分页结果数据类型为:" + str(type(results)))
+        logger.info("分页结束results=" + str(results))
         total_Records = paging_object.count
         crmmock_paydata_json_str = simplejson.dumps({"totalRecord": total_Records, "results": results})
-        logger.info({"totalRecord": total_Records, "results": results})
+        logger.info("响应数据结果为:" + str({"totalRecord": total_Records, "results": results}))
         return HttpResponse(crmmock_paydata_json_str, content_type="application/json")
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"crmmock接口设置页面分页数据结果返回错误如下:")
 
 
 # 功能菜单-crmmock接口设置数据处理
@@ -84,11 +82,12 @@ def crmdata_setting(request):
                     if i["crmcode"] == "oyjt":
                         des_card = i["card_no"]
                         crmmember_ID_url = "http://wap.oysd.cn/Info/WeChatCustomerInfo/" + des_card
-                        logger.info(crmmember_ID_url)
+                        logger.info("新增crmmock接口设置数据时欧亚CRM接口链接crmmember_ID_url=" + str(crmmember_ID_url))
                         httpObject = HttpUrlConnection(crmmember_ID_url)
                         crmmember_ID_result = httpObject.request().json()
-                        logger.info(crmmember_ID_result)
-                        logger.info(type(crmmember_ID_result))
+                        logger.info("新增crmmock接口设置数据时通过会员卡号获取基本会员信息crmmember_ID_result=" + crmmember_ID_result)
+                        logger.info("新增crmmock接口设置数据时通过会员卡号获取基本会员信息返回数据type(crmmember_ID_result))类型为:" + str(
+                            type(crmmember_ID_result)))
                         crmmock_paydata_db = CrmmockPaydata(card_no=i["card_no"], paylog=i["paylog"],
                                                             crmcode=i["crmcode"], growthlevel=i["growthlevel"],
                                                             growthvalue=i["growthvalue"],
@@ -108,21 +107,24 @@ def crmdata_setting(request):
                     if i["crmcode"] == "oyjt":
                         des_card = i["card_no"]
                         crmmember_ID_url = "http://wap.oysd.cn/Info/WeChatCustomerInfo/" + des_card
-                        logger.info(crmmember_ID_url)
+                        logger.info("更新crmmock接口设置数据时欧亚CRM接口链接crmmember_ID_url=" + str(crmmember_ID_url))
                         httpObject = HttpUrlConnection(crmmember_ID_url)
                         crmmember_ID_result = httpObject.request().json()
                         logger.info(crmmember_ID_result)
                         logger.info(type(crmmember_ID_result))
+                        logger.info("更新crmmock接口设置数据时通过会员卡号获取基本会员信息crmmember_ID_result=" + crmmember_ID_result)
+                        logger.info("更新crmmock接口设置数据时通过会员卡号获取基本会员信息返回数据type(crmmember_ID_result))类型为:" + str(
+                            type(crmmember_ID_result)))
                         CrmmockPaydata.objects.filter(id=i["id"]).update(id=i["id"], card_no=i["card_no"],
-                                                                     paylog=i["paylog"], crmcode=i["crmcode"],
-                                                                     growthlevel=i["growthlevel"],
-                                                                     growthvalue=i["growthvalue"], crmmemberid=
-                                                                     crmmember_ID_result["WCC"]["CrmMemberID"])
+                                                                         paylog=i["paylog"], crmcode=i["crmcode"],
+                                                                         growthlevel=i["growthlevel"],
+                                                                         growthvalue=i["growthvalue"], crmmemberid=
+                                                                         crmmember_ID_result["WCC"]["CrmMemberID"])
                     else:
                         CrmmockPaydata.objects.filter(id=i["id"]).update(id=i["id"], card_no=i["card_no"],
-                                                                     paylog=i["paylog"], crmcode=i["crmcode"],
-                                                                     growthlevel=i["growthlevel"],
-                                                                     growthvalue=i["growthvalue"])
+                                                                         paylog=i["paylog"], crmcode=i["crmcode"],
+                                                                         growthlevel=i["growthlevel"],
+                                                                         growthvalue=i["growthvalue"])
                     result = simplejson.dumps(result, ensure_ascii=False)
                     return HttpResponse(result)
                 else:
@@ -131,23 +133,21 @@ def crmdata_setting(request):
                     return HttpResponse(result)
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"crmMock数据设置错误如下:")
+
 
 # 烟台大悦城crm接口模拟
 @csrf_exempt
 def ytdyc_crm(request):
     try:
-        crmurl=str()
+        crmurl = str()
         if request.method == "POST":
             try:
                 crmdata = simplejson.loads(request.body.decode("utf-8"))
-                logger.info(type(crmdata))
-                logger.info(
-                    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crmdata=" + request.body.decode(
-                        "utf-8"))
-                logger.info(crmdata["method"])
-                logger.info(
-                    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>requestMethod=" + request.method)
+                logger.info("烟台大悦城CRM请求的数据类型type(crmdata)为:" + str(type(crmdata)))
+                logger.info("烟台大悦城CRM请求的数据crmdata=" + request.body.decode("utf-8"))
+                logger.info("烟台大悦城CRM请求的method数据method=" + str(crmdata["method"]))
+                logger.info("烟台大悦城CRM的接口请求的方法为:" + request.method)
                 # 数据库中获取配置
                 crmurl_object = CrmmockInfo.objects.filter(crmcode="ytdyc")
                 try:
@@ -155,13 +155,13 @@ def ytdyc_crm(request):
                 except:
                     crmdata_object = CrmmockPaydata.objects.filter(crmcode="ytdyc")
                 crmurl = list(crmurl_object)[0].crmuri
-                logger.debug(crmurl)
+                logger.debug("烟台大悦城CRM链接crmurl=" + str(crmurl))
             except:
                 logger.exception("基础数据错误：")
-            logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crmUri=" + crmurl)
+            logger.debug("烟台大悦城CRM链接crmurl=" + str(crmurl))
             # 满足条件则生成mock数据
             if crmdata["method"] == "GetVipPayLog":
-                logger.info(crmdata["method"])
+                logger.info("烟台大悦城CRM请求的method数据method=" + str(crmdata["method"]))
                 dt = crmdata["dt"]
                 sign = crmdata["sign"]
                 args_dict = crmdata["args"]
@@ -177,9 +177,9 @@ def ytdyc_crm(request):
                     try:
                         # 数据库读取设置好的支付记录
                         for j in list(crmdata_object.filter(card_no=crmdata["args"]["card_no"])):
-                            logger.info(j.paylog)
+                            logger.info("数据库中取出的对应烟台大悦城卡号的mock消费记录为:" + str(j.paylog))
                             paylog_dict = simplejson.loads(j.paylog)
-                            logger.info(paylog_dict)
+                            logger.info("转为字典的烟台大悦城消费记录paylog_dict=" + str(paylog_dict))
                         paylog_data_list = paylog_dict["data"]
                         if len(paylog_data_list) == 1:
                             # 设置了建卡时间但未设置消费记录
@@ -194,10 +194,10 @@ def ytdyc_crm(request):
                                 # 调用大悦城数据Dict
                                 args_data = ytdycDict(card_no, jointdate, salesamt, datetime_str_buy)
                                 paydata["args"].append(args_data)
-                                logger.info(paydata)
+                                logger.info("满足烟台大悦城的消费记录格式paydata=" + str(paydata))
                         return HttpResponse(simplejson.dumps(paydata, ensure_ascii=False))
                     except:
-                        logger.exception("自设定卡号mock异常:")
+                        logger.exception("烟台大悦城的自设定卡号mock异常:")
                 else:
                     try:
                         # 无支付记录的给予默认值
@@ -210,12 +210,14 @@ def ytdyc_crm(request):
                         # 调用大悦城数据Dict
                         args_data = ytdycDict(card_no, datetime_str_register, SALESAMT, datetime_str_buy)
                         paydata["args"].append(args_data)
+                        logger.info("mock中未配置烟台大悦城对应卡号数据，以下采取默认数据paydata="+str(paydata))
+                        # 无支付记录的给予默认值
                     except:
-                        logger.exception("非自设定卡号mock异常")
+                        logger.exception("非自设定卡号mock异常:")
                 return HttpResponse(simplejson.dumps(paydata, ensure_ascii=False))
             # 不满足条件则直接请求真实crm接口
             headers_dict = {"Content-type": "application/json"}
-            logger.info(crmdata)
+            logger.info("烟台大悦城CRM请求的数据crmdata=" + request.body.decode("utf-8"))
             httpObject = HttpUrlConnection(crmurl, method="POST", parameters=crmdata, headers=headers_dict)
             result = httpObject.request()
             if crmdata["method"] == "GetVipCard" and list(crmdata_object):
@@ -230,7 +232,7 @@ def ytdyc_crm(request):
                     result_dict["args"]["growthvalue"] = growthvalue
                     result = simplejson.dumps(result_dict, ensure_ascii=False)
                 except:
-                    logger.exception("成长值mock错误：")
+                    logger.exception("烟台大悦城成长值mock错误：")
         # 非POST请求返回
         else:
             resultDict = {"error": "1", "msg": "不提供POST以外的请求数据"}
@@ -238,41 +240,41 @@ def ytdyc_crm(request):
         return HttpResponse(result)
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"烟台大悦城mock错误如下:")
+
 
 # 欧亚集团crm接口模拟
 @csrf_exempt
 def oyjt_crm(request, rest_api):
     try:
         crmdata = dict()
-        logger.debug(request.body.decode("utf-8"))
+        logger.debug("欧亚CRM请求的数据为:"+str(request.body.decode("utf-8")))
         # 判断是json数据还是application/x-www-form-urlencoded请求数据
         if request.body.decode("utf-8") != "":
             if "&" in request.body.decode("utf-8"):
                 crmdata = InterfaceDataProcessing.urldecoded(request.body.decode("utf-8"))
-                logger.info(crmdata)
-                logger.info(crmdata["CrmMemberID"])
+                logger.info("欧亚CRM请求的数据crmdata="+str(crmdata))
+                logger.info("欧亚CRM请求数据中CrmMemberID="+str(crmdata["CrmMemberID"]))
             else:
                 crmdata = simplejson.loads(request.body.decode("utf-8"))
-                logger.info(crmdata)
-                logger.info(crmdata["CrmMemberID"])
+                logger.info("欧亚CRM请求的数据crmdata="+str(crmdata))
+                logger.info("欧亚CRM请求数据中CrmMemberID="+str(crmdata["CrmMemberID"]))
         # 数据库中获取配置
         crmurl_object = CrmmockInfo.objects.filter(crmcode="oyjt")
         crmurl = list(crmurl_object)[0].crmuri
-        logger.info(crmurl)
-        logger.info(rest_api)
-        logger.info(request.body)
-        logger.info(request.body.decode("utf-8"))
-        logger.info(request.method)
-        logger.info(request.method)
+        logger.info("欧亚CRM链接crmurl="+str(crmurl))
+        logger.info("欧亚CRM请求REST部分rest_api="+str(rest_api))
+        logger.info("欧亚CRM请求未解码数据为:"+str(request.body))
+        logger.info("欧亚CRM请求解码数据为:"+str(request.body.decode("utf-8")))
+        logger.info("欧亚CRM方法为:"+str(request.method))
         # 获取rest链接参数
         crmapi = rest_api
         # 拼接真正请求的url
         crm_rest_absapi = crmurl + "/" + rest_api
-        logger.info(
-            ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>crm_rest_absapi=" + crm_rest_absapi)
-        logger.info(request.method)
+        logger.info("完成的欧亚CRM请求链接crm_rest_absapi=" + str(crm_rest_absapi))
+        logger.info("欧亚CRM方法为:"+str(request.method))
         if request.method == "POST":
+            logger.info("以求发生在欧亚CRM的POST请求方法中!")
             try:
                 crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt", crmmemberid=crmdata["CrmMemberID"])
             except:
@@ -293,18 +295,17 @@ def oyjt_crm(request, rest_api):
                 paydata["0"] = paydata_detail
                 logger.info(crmdata["CrmMemberID"])
                 if list(crmdata_object):
-                    paylog_data_list=list()
+                    paylog_data_list = list()
                     try:
                         # 数据库读取设置好的支付记录
                         paylog_dict = dict()
-                        logger.debug(paylog_dict)
+                        logger.info("转为字典的欧亚消费记录paylog_dict=" + str(paylog_dict))
                         for j in list(crmdata_object):
-                            logger.info("++++++++++++++++++++++++++++++++++++")
-                            logger.info(j.paylog)
+                            logger.info("数据库中取出的对应欧亚卡号的mock消费记录为:" + str(j.paylog))
                             paylog_dict = simplejson.loads(j.paylog)
-                            logger.info(paylog_dict)
+                        logger.info("转为字典的欧亚消费记录paylog_dict=" + str(paylog_dict))
                         paylog_data_list = paylog_dict["data"]
-                        logger.info(paylog_data_list)
+                        logger.info("数据库中取出的对应欧亚卡号的mock消费记录具体数据paylog_data_list=" + str(paylog_data_list))
                     except:
                         logger.exception("支付记录获取错误：")
                     if len(paylog_data_list) == 1:
@@ -320,13 +321,13 @@ def oyjt_crm(request, rest_api):
                         for k in range(len(paylog_data_list) - 1):
                             num = k + 1
                             amount = paylog_data_list[num][0]
-                            logger.info(amount)
+                            logger.info("欧亚消费总数amount="+str(amount))
                             orderDate = paylog_data_list[num][1]
-                            logger.info(orderDate)
+                            logger.info("欧亚订单日期orderDate="+str(orderDate))
                             # 调用大悦城数据Dict
                             info_data = oyjtDict(amount, orderDate)
                             paydata_detail["Infos"].append(info_data)
-                            logger.info(paydata_detail)
+                            logger.info("欧亚详细消费数据paydata_detail="+str(paydata_detail))
                     if len(paydata_detail["Infos"]) != 0:
                         shopCount = len(paydata_detail["Infos"])
                         shopSumMoney = float(0)
@@ -346,45 +347,43 @@ def oyjt_crm(request, rest_api):
                     AMOUNT = "600.00"
                     # 调用欧亚数据Dict
                     info_data = oyjtDict(AMOUNT, orderDate)
-                    logger.info(info_data)
+                    logger.info("mock未设置欧亚会员卡数据，默认info_data="+str(info_data))
                     paydata_detail["Infos"].append(info_data)
-                    logger.info(paydata_detail)
-                    logger.info(paydata)
-                    logger.info(paydata[crmdata["hasOrder"]])
-                    logger.info(simplejson.dumps(paydata[crmdata["hasOrder"]]))
+                    logger.info("mock未设置欧亚会员卡数据，默认paydata_detail="+str(paydata_detail))
                     paydata_detail["Info"]["shopCount"] = str(1)
                     paydata_detail["Info"]["shopSumMoney"] = str(AMOUNT)
                     paydata_total["Info"]["shopCount"] = str(1)
                     paydata_total["Info"]["shopSumMoney"] = str(AMOUNT)
-                    logger.info(simplejson.dumps(paydata_total))
+                    logger.info("mock未设置欧亚会员卡数据，默认的paydata_total="+str(paydata_total))
+                    logger.info("mock未设置欧亚会员卡数据，默认的paydata_total="+str(paydata_detail))
                 return HttpResponse(simplejson.dumps(paydata[crmdata["hasOrder"]], ensure_ascii=False))
             # 不满足条件则直接请求真实crm接口
             headers_dict = {"Content-type": "application/x-www-form-urlencoded"}
-            logger.info(crmdata)
+            logger.info("欧亚CRM请求的crmdata="+str(crmdata))
             httpObject = HttpUrlConnection(crm_rest_absapi, method="POST", parameters=crmdata, headers=headers_dict)
             result = httpObject.request()
 
         if request.method == "GET":
-            resultDict=dict()
+            logger.info("以求发生在欧亚CRM的GET请求方法中!")
+            resultDict = dict()
             try:
                 crmdata_object = CrmmockPaydata.objects.filter(crmcode="oyjt")
                 httpObject = HttpUrlConnection(crm_rest_absapi, method="GET")
-                logger.info("+++++++++++++++++++++++++++++++++++++")
                 result = httpObject.request().json()
-                logger.debug(type(result))
-                logger.debug(result)
+                logger.debug("欧亚CRM请求的结果type(result))类型为:"+str(type(result)))
+                logger.debug("欧亚CRM请求的结果result="+str(result))
                 resultDict = result
                 # 获取会员卡信息，其他接口数据直接返回result
                 if "Info/MembershipCardBasicInfo" in crmapi and resultDict["Mcb"] != None:
-                    logger.debug(resultDict["Mcb"]["CardID"])
-                    logger.debug(list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])))
+                    logger.debug("欧亚CRM请求的CardID="+str(resultDict["Mcb"]["CardID"]))
+                    logger.debug("mock中对应欧亚CardID设置的数据为:"+str(list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"]))))
                     if list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
                         # 数据库读取设置好的支付记录
                         paylog_dict = dict()
                         for j in list(crmdata_object.filter(card_no=resultDict["Mcb"]["CardID"])):
-                            logger.info(j.paylog)
+                            logger.info("mock中设置的欧亚会员数据为:"+str(j.paylog))
                             paylog_dict = simplejson.loads(j.paylog)
-                            logger.info(paylog_dict)
+                            logger.info("mock中设置的欧亚会员数据转换的字典paylog_dict="+str(paylog_dict))
                         # 获取数据库中配置的建卡时间
                         createDate = paylog_dict["data"][0]
                         # 只更改正常获取crm信息中的建卡时间,欧亚没时分秒
@@ -393,22 +392,23 @@ def oyjt_crm(request, rest_api):
             except:
                 logger.exception("GET方法错误：")
             result = simplejson.dumps(resultDict, ensure_ascii=False)
-            logger.info(result)
+            logger.info("欧亚CRM正常请求的数据result="+str(result))
         return HttpResponse(result)
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"欧亚crmMock错误如下:")
+
 
 def query_cardno(request):
     try:
         paging_data = request.GET
-        logger.info(paging_data)
+        logger.info("请求的分页要求数据信息paging_data=" + str(paging_data))
         crmno_condition = paging_data.get("crmNoCondition")
-        logger.info(crmno_condition)
+        logger.info("请求的查询条件卡号crmno_condition="+str(crmno_condition))
         page = paging_data.get("page")
-        logger.info(page)
+        logger.info("当前页page=" + str(page))
         rows = paging_data.get("rows")
-        logger.info(rows)
+        logger.info("每页显示行数rows=" + str(rows))
         crmmock_paydata_json_data = CrmmockPaydata.objects.all()
         crmmock_paydata_json_list = []
         index_num = 0
@@ -422,14 +422,12 @@ def query_cardno(request):
             index_num = index_num + 1
         paging_object = Paginator(crmmock_paydata_json_list, rows)
         results = paging_object.page(page).object_list
-        logger.info("===========================================================")
-        logger.info(type(results))
-        logger.info(results)
+        logger.info("分页结果数据类型为:" + str(type(results)))
+        logger.info("分页结束results=" + str(results))
         total_Records = paging_object.count
         crmmock_paydata_json_str = simplejson.dumps({"totalRecord": total_Records, "results": results})
-        logger.info({"totalRecord": total_Records, "results": results})
-        logger.info(crmmock_paydata_json_str)
+        logger.info("响应数据结果为:" + str({"totalRecord": total_Records, "results": results}))
         return HttpResponse(crmmock_paydata_json_str, content_type="application/json")
     except Exception as e:
         logger.error(e)
-        logger.exception(u"捕获到错误如下:")
+        logger.exception(u"按条件查询卡号crmMock设置错误如下:")
