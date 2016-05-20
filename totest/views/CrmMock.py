@@ -125,12 +125,12 @@ def crmdata_setting(request):
                                                                          paylog=i["paylog"], crmcode=i["crmcode"],
                                                                          growthlevel=i["growthlevel"],
                                                                          growthvalue=i["growthvalue"])
-                    result = simplejson.dumps(result, ensure_ascii=False)
-                    return HttpResponse(result)
-                else:
-                    result = "error!!!"
-                    result = simplejson.dumps(result, ensure_ascii=False)
-                    return HttpResponse(result)
+            result = simplejson.dumps(result, ensure_ascii=False)
+            return HttpResponse(result)
+        else:
+            result = "error!!!"
+            result = simplejson.dumps(result, ensure_ascii=False)
+            return HttpResponse(result)
     except Exception as e:
         logger.error(e)
         logger.exception(u"crmMock数据设置错误如下:")
