@@ -72,6 +72,9 @@
                 //alert("生成成功！");
                 document.getElementById("abDistance").value = "";
                 document.getElementById("abDistance").value = data;
+                //转json
+                //eval("(" + data + ")");
+                //$.parseJSON(data);
             },
             error: function () {
                 alert("计算失败！");
